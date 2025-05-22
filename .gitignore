@@ -1,0 +1,15 @@
+# Entorno virtual
+venv/
+
+# Archivos Python
+__pycache__/
+*.pyc
+
+# Entornos/variables
+.env
+
+# Archivos de VSCode
+.vscode/
+
+# Ignorar subproyecto Java compilado
+selenium-tests/target/

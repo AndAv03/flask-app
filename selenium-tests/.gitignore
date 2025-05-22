@@ -1,0 +1,27 @@
+# Archivos compilados
+/target/
+
+# Archivos temporales
+*.log
+*.class
+*.jar
+*.war
+*.ear
+
+# Archivos de entorno del sistema
+.DS_Store
+Thumbs.db
+
+# Configuraciones de IDE
+*.iml
+.idea/
+*.ipr
+*.iws
+
+# VSCode settings
+.vscode/
+
+# Maven wrapper
+.mvn/
+!**/mvnw
+!**/mvnw.cmd
