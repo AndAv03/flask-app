@@ -1,9 +1,19 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
+
+{% block title %}Login - Gestor de Tareas{% endblock %}
+
 {% block content %}
-<h2>Login</h2>
-<form method="post">
-    Usuario: <input type="text" name="username"><br>
-    Clave: <input type="password" name="password"><br>
-    <button type="submit">Ingresar</button>
+<h2>Iniciar Sesión</h2>
+<form method="POST" class="needs-validation" novalidate>
+    <div class="mb-3">
+        <label for="username" class="form-label">Usuario</label>
+        <input type="text" class="form-control" id="username" name="username" required pattern="\\S+">
+    </div>
+    <div class="mb-3">
+        <label for="password" class="form-label">Contraseña</label>
+        <input type="password" class="form-control" id="password" name="password" required pattern="\\S+">
+    </div>
+    <button type="submit" class="btn btn-success">Ingresar</button>
+    <a href="{{ url_for('home') }}" class="btn btn-primary">← Volver</a>
 </form>
 {% endblock %}

@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Bienvenido, {{ session['usuario'] }} 👋</h2>
+
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Tus Tareas</h5>
+        </div>
+        <div class="card-body">
+            {% if tareas %}
+                <ul class="list-group mb-3">
+                    {% for tarea in tareas %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            {{ tarea }}
+                            <a href="{{ url_for('delete_task', task_id=loop.index0) }}" class="btn btn-sm btn-outline-danger">
+                                Eliminar
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="text-muted">No tienes tareas aún.</p>
+            {% endif %}
+
+            <form method="POST" class="d-flex">
+                <input type="text" name="task" class="form-control me-2" placeholder="Nueva tarea..." required pattern="\S+">
+                <button type="submit" class="btn btn-success">Agregar</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="text-end mt-3">
+        <a href="{{ url_for('logout') }}" class="btn btn-outline-danger" >Cerrar sesión</a>
+    </div>
+</div>
+{% endblock %}
