@@ -17,12 +17,17 @@ import java.util.concurrent.TimeUnit;
 //
 // Prueba de Aceptación: Verificar que una tarea nueva aparece en la lista
 // después de agregarla.
-//
-// 1. Iniciar sesión con credenciales válidas
-// 2. En el dashboard, escribir el título de la tarea en el campo correspondiente
-// 3. Hacer clic en "Agregar"
-// 4. Verificar que la tarea aparece en la lista de tareas
-//
+//  
+// 1. Ingresar a la página principal del Gestor de Tareas
+// 2. Hacer clic en el botón "Iniciar Sesión"
+// 3. Rellenar el formulario de inicio de sesión con un usuario existente
+// 4. Hacer clic en el botón "Ingresar"
+// 5. Verificar que se redirige al dashboard
+// 6. Ingresar el texto de la tarea en el campo correspondiente
+// 7. Hacer clic en el botón "Agregar"
+// 8. Verificar que la tarea aparece en la lista de tareas
+// 
+// 
 // RESULTADO ESPERADO: La tarea agregada se muestra correctamente en la lista de tareas.
 /****************************************/
 
@@ -47,39 +52,45 @@ public class AgregarTareaTest {
 
     @Test
     public void agregarNuevaTareaYVerificarEnLista() throws InterruptedException {
-        // Paso 1: Iniciar sesión
-        driver.get("http://localhost:5000/login");
-        
+        // Paso 1: Ingresar a la página principal
+        driver.get("http://localhost:5000"); 
+
+        // Paso 2: Hacer clic en el botón "Iniciar Sesion" desde home
+        WebElement botonLoginHome = driver.findElement(By.xpath("//a[text()='Iniciar Sesión']"));
+        botonLoginHome.click();
+
+        // Paso 3: Rellenar el formulario de inicio de sesión      
         WebElement username = driver.findElement(By.name("username"));
         WebElement password = driver.findElement(By.name("password"));
         
         username.sendKeys(nombreUsuario);
         password.sendKeys(contraseña);
         
+        // Paso 4: Hacer clic en el botón "Ingresar"
         WebElement botonLogin = driver.findElement(By.xpath("//button[text()='Ingresar']"));
         botonLogin.click();
         
-        // Verificar que estamos en el dashboard
-        Thread.sleep(1000);
+        // Paso 5: Verificar que estamos en el dashboard
+        Thread.sleep(2500);
         String currentUrl = driver.getCurrentUrl();
         Assert.assertTrue("No se redirigió al dashboard", currentUrl.contains("/dashboard"));
         
-        // Paso 2: Crear un texto simple para la tarea
+
+         // Paso 6: Ingresar el texto de la tarea en el campo correspondiente
         String textoTarea = "software";
         
-        // Paso 3: Escribir la tarea en el campo de entrada
         WebElement campoTarea = driver.findElement(By.name("task"));
         campoTarea.clear();
         campoTarea.sendKeys(textoTarea);
         
-        // Paso 4: Hacer clic en el botón "Agregar"
+        // Paso 7: Hacer clic en el botón "Agregar"
         WebElement botonAgregar = driver.findElement(By.xpath("//button[text()='Agregar']"));
         botonAgregar.click();
         
         // Esperar a que se actualice la lista (aumentamos el tiempo de espera)
-        Thread.sleep(2000);
+        Thread.sleep(2500);
         
-        // Paso 5: Verificar que la tarea aparece en la lista
+        // Paso 8: Verificar que la tarea aparece en la lista
         // Imprimir todas las tareas encontradas para depuración
         System.out.println("Buscando tarea: " + textoTarea);
         List<WebElement> elementosTarea = driver.findElements(By.cssSelector(".list-group-item"));
