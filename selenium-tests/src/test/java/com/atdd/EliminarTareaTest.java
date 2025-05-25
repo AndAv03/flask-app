@@ -1,12 +1,26 @@
 package com.atdd;
 
-import io.github.bonigarcia.wdm.WebDriverManager;
 import org.junit.*;
 import org.openqa.selenium.*;
-import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.RemoteWebDriver;
-import org.openqa.selenium.remote.DesiredCapabilities;
 import java.net.URL;
+
+/****************************************/
+// Historia de Usuario: Como usuario quiero eliminar una tarea
+// para mantener mi lista de pendientes actualizada.
+//
+// Prueba de Aceptación: Verificar que una tarea desaparece de la lista
+// después de eliminarla.
+//
+// 1. Iniciar sesión (registrar usuario si es necesario)
+// 2. Asegurarse de que hay al menos una tarea visible (si no, agregar una)
+// 3. Hacer clic en el botón de "Eliminar" junto a la tarea
+// 4. Esperar que se actualice la lista
+// 5. Verificar que la tarea ya no está visible en la lista
+//
+// RESULTADO ESPERADO: La tarea eliminada ya no debe aparecer en la lista de tareas.
+/****************************************/
 
 public class EliminarTareaTest {
 
@@ -15,9 +29,14 @@ public class EliminarTareaTest {
 
     @Before
     public void setUp() throws Exception {
-        WebDriverManager.chromedriver().setup();
-        DesiredCapabilities capabilities = DesiredCapabilities.chrome();
-        driver = new RemoteWebDriver(new URL("http://localhost:4444/wd/hub"), capabilities);
+        // Configuración de Chrome para ejecución en CI (headless y flags recomendados)
+        ChromeOptions options = new ChromeOptions();
+        options.addArguments("--headless");
+        options.addArguments("--no-sandbox");
+        options.addArguments("--disable-dev-shm-usage");
+        options.addArguments("--disable-gpu");
+        options.addArguments("--window-size=1920,1080");
+        driver = new RemoteWebDriver(new URL("http://localhost:4444/wd/hub"), options);
         driver.manage().window().maximize();
         baseUrl = System.getenv().getOrDefault("FLASK_BASE_URL", "http://localhost:5000");
     }
@@ -49,10 +68,10 @@ public class EliminarTareaTest {
         botonEliminar.click();
         Thread.sleep(1000);
 
-        // Paso 5: Esperar que se actualice la lista
+        // Paso 4: Esperar que se actualice la lista
         Thread.sleep(1000);
 
-        // Paso 6: Verificar que la tarea ya no está visible en la lista
+        // Paso 5: Verificar que la tarea ya no está visible en la lista
         boolean tareaPresente = driver.findElements(By.xpath("//li[contains(.,'" + tituloTarea + "')]")).size() > 0;
         Assert.assertFalse("La tarea eliminada aún está presente en la lista", tareaPresente);
     }

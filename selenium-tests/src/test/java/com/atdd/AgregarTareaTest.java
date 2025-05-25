@@ -1,16 +1,13 @@
 package com.atdd;
 
-import io.github.bonigarcia.wdm.WebDriverManager;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.*;
-import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.RemoteWebDriver;
-import org.openqa.selenium.remote.DesiredCapabilities;
 import java.net.URL;
-
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -43,9 +40,14 @@ public class AgregarTareaTest {
 
     @Before
     public void setUp() throws Exception {
-        WebDriverManager.chromedriver().setup();
-        DesiredCapabilities capabilities = DesiredCapabilities.chrome();
-        driver = new RemoteWebDriver(new URL("http://localhost:4444/wd/hub"), capabilities);
+        // Configuración de Chrome para ejecución en CI (headless y flags recomendados)
+        ChromeOptions options = new ChromeOptions();
+        options.addArguments("--headless");
+        options.addArguments("--no-sandbox");
+        options.addArguments("--disable-dev-shm-usage");
+        options.addArguments("--disable-gpu");
+        options.addArguments("--window-size=1920,1080");
+        driver = new RemoteWebDriver(new URL("http://localhost:4444/wd/hub"), options);
         driver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS);
         driver.manage().window().maximize();
         baseUrl = System.getenv().getOrDefault("FLASK_BASE_URL", "http://localhost:5000");
