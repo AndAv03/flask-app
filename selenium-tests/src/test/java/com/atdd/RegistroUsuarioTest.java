@@ -36,21 +36,22 @@ import java.util.concurrent.TimeUnit;
 public class RegistroUsuarioTest {
 
     private WebDriver driver;
+    private String baseUrl;
 
     @Before
     public void setUp() throws Exception {
         WebDriverManager.chromedriver().setup();
         DesiredCapabilities capabilities = DesiredCapabilities.chrome();
         driver = new RemoteWebDriver(new URL("http://localhost:4444/wd/hub"), capabilities);
-
         driver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS);
         driver.manage().window().maximize();
+        baseUrl = System.getenv().getOrDefault("FLASK_BASE_URL", "http://localhost:5000");
     }
 
     @Test
     public void registrarNuevoUsuarioYRedirigirADashboard() throws InterruptedException {
         // Paso 1: Ingresar a la página principal
-        driver.get("http://localhost:5000"); 
+        driver.get(baseUrl);
 
         // Paso 2: Hacer clic en el botón "Registrarse" desde home
         WebElement botonRegistroHome = driver.findElement(By.xpath("//a[text()='Registrarse']"));
@@ -59,44 +60,38 @@ public class RegistroUsuarioTest {
         // Paso 3: Rellenar el formulario de registro
         WebElement username = driver.findElement(By.name("username"));
         WebElement password = driver.findElement(By.name("password"));
-        //WebElement confirmPassword = driver.findElement(By.xpath("/html/body/div/form/button"));
-
         String nombreAleatorio = "usuario" + System.currentTimeMillis();
         String passwString = "clave123";
-
         username.sendKeys(nombreAleatorio);
         password.sendKeys(passwString);
-        // confirmPassword.sendKeys("clave123");
 
         // Paso 4: Presionar el botón "Registrar"
-        WebElement botonRegistro = driver.findElement(By.xpath("/html/body/div/form/button"));
+        WebElement botonRegistro = driver.findElement(By.xpath("//button[text()='Registrarse']"));
         botonRegistro.click();
 
         // Paso 5: Esperar y verificar redirección a /login
-        Thread.sleep(3000); 
-
+        Thread.sleep(2000);
         String currentUrl = driver.getCurrentUrl();
         Assert.assertTrue("No se redirigió al login", currentUrl.contains("/login"));
 
-        //Paso 6: Llenar el formulario de inicio de sesión con el nuevo usuario registrado
+        // Paso 6: Llenar el formulario de inicio de sesión con el nuevo usuario registrado
         WebElement usernameLogin = driver.findElement(By.name("username"));
         WebElement passwordLogin = driver.findElement(By.name("password"));
         usernameLogin.sendKeys(nombreAleatorio);
         passwordLogin.sendKeys(passwString);
 
         // Paso 7: Hacer clic en el botón "Iniciar sesión"
-        WebElement botonLogin = driver.findElement(By.xpath("/html/body/div/form/button"));
+        WebElement botonLogin = driver.findElement(By.xpath("//button[text()='Ingresar']"));
         botonLogin.click();
 
-        // Paso 8: Esperar redirección a /dashboard 
-        Thread.sleep(3000); 
-
+        // Paso 8: Esperar redirección a /dashboard
+        Thread.sleep(2000);
         String currentUrlDashboard = driver.getCurrentUrl();
         Assert.assertTrue("No se redirigió al dashboard", currentUrlDashboard.contains("/dashboard"));
 
         // Verificación del resultado esperado
-        WebElement saludo = driver.findElement(By.xpath("/html/body/div/div/h2"));
-        Assert.assertTrue("No se encontró saludo", saludo.getText().toLowerCase().contains("bienvenido, " + nombreAleatorio.toLowerCase()));
+        WebElement saludo = driver.findElement(By.xpath("//h2[contains(text(),'Bienvenido')]"));
+        Assert.assertTrue("No se encontró saludo", saludo.getText().toLowerCase().contains(nombreAleatorio.toLowerCase()));
     }
 
     @After

@@ -37,6 +37,7 @@ import java.util.concurrent.TimeUnit;
 public class AgregarTareaTest {
 
     private WebDriver driver;
+    private String baseUrl;
     private String nombreUsuario;
     private String contraseña;
 
@@ -47,8 +48,7 @@ public class AgregarTareaTest {
         driver = new RemoteWebDriver(new URL("http://localhost:4444/wd/hub"), capabilities);
         driver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS);
         driver.manage().window().maximize();
-        
-        // Usar un usuario existente o crear uno nuevo para las pruebas
+        baseUrl = System.getenv().getOrDefault("FLASK_BASE_URL", "http://localhost:5000");
         nombreUsuario = "testuser";
         contraseña = "123";
     }
@@ -56,76 +56,49 @@ public class AgregarTareaTest {
     @Test
     public void agregarNuevaTareaYVerificarEnLista() throws InterruptedException {
         // Paso 1: Ingresar a la página principal
-        driver.get("http://localhost:5000"); 
+        driver.get(baseUrl);
 
-        // Paso 2: Hacer clic en el botón "Iniciar Sesion" desde home
+        // Paso 2: Hacer clic en el botón "Iniciar Sesión" desde home
         WebElement botonLoginHome = driver.findElement(By.xpath("//a[text()='Iniciar Sesión']"));
         botonLoginHome.click();
 
-        // Paso 3: Rellenar el formulario de inicio de sesión      
+        // Paso 3: Rellenar el formulario de inicio de sesión
         WebElement username = driver.findElement(By.name("username"));
         WebElement password = driver.findElement(By.name("password"));
-        
         username.sendKeys(nombreUsuario);
         password.sendKeys(contraseña);
-        
+
         // Paso 4: Hacer clic en el botón "Ingresar"
         WebElement botonLogin = driver.findElement(By.xpath("//button[text()='Ingresar']"));
         botonLogin.click();
-        
+
         // Paso 5: Verificar que estamos en el dashboard
-        Thread.sleep(2500);
+        Thread.sleep(2000);
         String currentUrl = driver.getCurrentUrl();
         Assert.assertTrue("No se redirigió al dashboard", currentUrl.contains("/dashboard"));
-        
 
-         // Paso 6: Ingresar el texto de la tarea en el campo correspondiente
-        String textoTarea = "software";
-        
+        // Paso 6: Ingresar el texto de la tarea en el campo correspondiente
+        String textoTarea = "software" + System.currentTimeMillis();
         WebElement campoTarea = driver.findElement(By.name("task"));
         campoTarea.clear();
         campoTarea.sendKeys(textoTarea);
-        
+
         // Paso 7: Hacer clic en el botón "Agregar"
         WebElement botonAgregar = driver.findElement(By.xpath("//button[text()='Agregar']"));
         botonAgregar.click();
-        
-        // Esperar a que se actualice la lista (aumentamos el tiempo de espera)
-        Thread.sleep(2500);
-        
+
+        // Esperar a que se actualice la lista
+        Thread.sleep(2000);
+
         // Paso 8: Verificar que la tarea aparece en la lista
-        // Imprimir todas las tareas encontradas para depuración
-        System.out.println("Buscando tarea: " + textoTarea);
         List<WebElement> elementosTarea = driver.findElements(By.cssSelector(".list-group-item"));
-        System.out.println("Número de elementos encontrados: " + elementosTarea.size());
-        
-        for (WebElement elemento : elementosTarea) {
-            System.out.println("Texto del elemento: [" + elemento.getText() + "]");
-        }
-        
-        // Intentar con un enfoque más directo para encontrar el texto
         boolean tareaEncontrada = false;
-        try {
-            // Intentar buscar directamente por el texto
-            WebElement elementoTarea = driver.findElement(
-                By.xpath("//li[contains(text(),'" + textoTarea + "') or .//*[contains(text(),'" + textoTarea + "')]]"));
-            tareaEncontrada = true;
-            System.out.println("Tarea encontrada usando XPath alternativo");
-        } catch (NoSuchElementException e) {
-            System.out.println("No se encontró la tarea usando XPath alternativo");
-        }
-        
-        // Si no encontramos con XPath, intentar con el método original
-        if (!tareaEncontrada) {
-            for (WebElement elemento : elementosTarea) {
-                if (elemento.getText().contains(textoTarea)) {
-                    tareaEncontrada = true;
-                    System.out.println("Tarea encontrada usando método original");
-                    break;
-                }
+        for (WebElement elemento : elementosTarea) {
+            if (elemento.getText().contains(textoTarea)) {
+                tareaEncontrada = true;
+                break;
             }
         }
-        
         Assert.assertTrue("La tarea agregada no se encontró en la lista", tareaEncontrada);
     }
 

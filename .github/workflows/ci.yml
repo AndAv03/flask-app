@@ -37,7 +37,7 @@ jobs:
 
     - name: Start Flask app
       run: |
-        nohup flask run --host=0.0.0.0 &
+        nohup flask run --host=0.0.0.0 --port=5000 &
       env:
         FLASK_APP: app.py
         FLASK_ENV: development
@@ -45,6 +45,9 @@ jobs:
     - name: Wait for Flask to be ready
       run: |
         sleep 10
+
+    - name: Set FLASK_BASE_URL for Docker Selenium
+      run: echo "FLASK_BASE_URL=http://172.17.0.1:5000" >> $GITHUB_ENV
 
     - name: Run Selenium tests
       working-directory: selenium-tests
