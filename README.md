@@ -7,7 +7,7 @@ Aplicación Flask simple para practicar pruebas ATDD con Selenium en Java.
 ```bash
 python -m venv venv
 .\venv\Scripts\activate
-pip install -r requirements.txt
+pip install --user -r requirements.txt
 ```
 
 ## Ejecucion de la página web con Flask
