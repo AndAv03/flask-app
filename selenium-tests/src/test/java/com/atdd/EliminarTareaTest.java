@@ -1,0 +1,62 @@
+package com.atdd;
+
+import io.github.bonigarcia.wdm.WebDriverManager;
+import org.junit.*;
+import org.openqa.selenium.*;
+import org.openqa.selenium.chrome.ChromeDriver;
+
+public class EliminarTareaTest {
+
+    private WebDriver driver;
+
+    @Before
+    public void setUp() {
+        WebDriverManager.chromedriver().setup();
+        driver = new ChromeDriver();
+        driver.manage().window().maximize();
+    }
+
+    @Test
+    public void eliminarTareaExistenteYConfirmarDesaparicion() throws InterruptedException {
+        // Paso 1: Iniciar sesión (registrar usuario si es necesario)
+        driver.get("http://localhost:5000/register");
+        String usuario = "usuario" + System.currentTimeMillis();
+        String clave = "clave123";
+        driver.findElement(By.name("username")).sendKeys(usuario);
+        driver.findElement(By.name("password")).sendKeys(clave);
+        driver.findElement(By.xpath("/html/body/div/form/button")).click();
+        Thread.sleep(1000);
+        driver.findElement(By.name("username")).sendKeys(usuario);
+        driver.findElement(By.name("password")).sendKeys(clave);
+        driver.findElement(By.xpath("/html/body/div/form/button")).click();
+        Thread.sleep(1000);
+
+        // Paso 2: Asegurarse de que hay al menos una tarea visible (si no, agregar una)
+        String tituloTarea = "Tarea para eliminar " + System.currentTimeMillis();
+        WebElement inputTarea = driver.findElement(By.name("task"));
+        inputTarea.sendKeys(tituloTarea);
+        driver.findElement(By.xpath("//button[text()='Agregar']")).click();
+        Thread.sleep(1000);
+
+        // Paso 3: Hacer clic en el botón de "Eliminar" junto a la tarea
+        WebElement botonEliminar = driver.findElement(By.xpath("//li[contains(.,'" + tituloTarea + "')]//a[contains(@class,'btn-outline-danger')]"));
+        botonEliminar.click();
+        Thread.sleep(1000);
+
+        // Paso 4: (No hay diálogo de confirmación en la app actual, así que se omite)
+
+        // Paso 5: Esperar que se actualice la lista
+        Thread.sleep(1000);
+
+        // Paso 6: Verificar que la tarea ya no está visible en la lista
+        boolean tareaPresente = driver.findElements(By.xpath("//li[contains(.,'" + tituloTarea + "')]")).size() > 0;
+        Assert.assertFalse("La tarea eliminada aún está presente en la lista", tareaPresente);
+    }
+
+    @After
+    public void tearDown() {
+        if (driver != null) {
+            driver.quit();
+        }
+    }
+}
