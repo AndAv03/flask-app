@@ -4,16 +4,21 @@ import io.github.bonigarcia.wdm.WebDriverManager;
 import org.junit.*;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.remote.RemoteWebDriver;
+import org.openqa.selenium.remote.DesiredCapabilities;
+import java.net.URL;
 
 public class EliminarTareaTest {
 
     private WebDriver driver;
 
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
         WebDriverManager.chromedriver().setup();
-        driver = new ChromeDriver();
+        DesiredCapabilities capabilities = DesiredCapabilities.chrome();
+        driver = new RemoteWebDriver(new URL("http://localhost:4444/wd/hub"), capabilities);
         driver.manage().window().maximize();
+
     }
 
     @Test
