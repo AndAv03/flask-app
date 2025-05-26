@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 //
 // 1. Acceder a la página principal del Gestor de Tareas
 // Paso 2: Hacer clic en el botón "Registrarse" desde home
-// Paso 3: registrar usuario si es necesario)
+// Paso 3: registrar usuario 
 // Paso 4: Asegurarse de que hay al menos una tarea visible (si no, agregar una)
 // Paso 5: Hacer clic en el botón de "Eliminar" junto a la tarea
 // Paso 6: Esperar que la tarea desaparezca de la lista
