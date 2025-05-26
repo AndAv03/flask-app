@@ -77,8 +77,9 @@ public class EliminarTareaTest {
         try {
             ul = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("ul.list-group")));
             Assert.assertNotNull("Task list element missing", ul);
-        } catch (TimeoutException e) {
-            throw new AssertionError("Task list not found within the timeout. Current DOM: " + driver.getPageSource(), e);
+        } catch (TimeoutException | NoSuchElementException e) {
+            // Log the DOM for debugging
+            throw new AssertionError("Task list not found or not visible within the timeout. Current DOM snapshot: " + driver.getPageSource(), e);
         }
 
         // Esperar a que el <li> de la tarea agregada esté presente
@@ -89,8 +90,8 @@ public class EliminarTareaTest {
                 By.xpath(".//li[contains(., '" + tituloTarea + "')]")
             ));
             Assert.assertNotNull("Task not found after adding", liTarea);
-        } catch (TimeoutException e) {
-            throw new AssertionError("Task not found within the timeout. Current DOM: " + driver.getPageSource(), e);
+        } catch (TimeoutException | NoSuchElementException e) {
+            throw new AssertionError("Task not found within the timeout. Check if the task was added properly. Current DOM snapshot: " + driver.getPageSource(), e);
         }
 
         // Paso 3: Hacer clic en el botón de "Eliminar" junto a la tarea
