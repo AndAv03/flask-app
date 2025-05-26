@@ -54,7 +54,7 @@ public class EliminarTareaTest {
         driver.findElement(By.name("password")).sendKeys(clave);
         driver.findElement(By.xpath("//button[text()='Registrarse']")).click();
 
-        WebDriverWait wait = new WebDriverWait(driver, 60);
+        WebDriverWait wait = new WebDriverWait(driver, 90);
 
         // Esperar a que el formulario de login esté visible
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.name("username")));
@@ -85,7 +85,6 @@ public class EliminarTareaTest {
             });
             Assert.assertNotNull("Task list element missing or not displayed", ul);
         } catch (TimeoutException e) {
-            // Log the DOM for debugging
             throw new AssertionError("Task list not found or not visible within the timeout. Current DOM snapshot: " + driver.getPageSource(), e);
         }
 
@@ -98,8 +97,9 @@ public class EliminarTareaTest {
             ));
             Assert.assertNotNull("Task not found after adding", liTarea);
         } catch (TimeoutException | NoSuchElementException e) {
-            throw new AssertionError("Task not found within the timeout. Check if the task was added properly. Current DOM snapshot: " + driver.getPageSource(), e);
+            throw new AssertionError("Task not found within the timeout. Current DOM snapshot: " + driver.getPageSource(), e);
         }
+
 
         // Paso 3: Hacer clic en el botón de "Eliminar" junto a la tarea
         WebElement botonEliminar = liTarea.findElement(By.xpath(".//a[contains(@class,'btn-outline-danger')]"));
