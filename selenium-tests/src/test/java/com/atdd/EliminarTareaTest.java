@@ -75,14 +75,7 @@ public class EliminarTareaTest {
         // Esperar explícitamente a que la lista de tareas sea visible en el DOM con una condición personalizada
         WebElement ul;
         try {
-            ul = wait.until(driver -> {
-                try {
-                    WebElement element = driver.findElement(By.cssSelector("ul.list-group"));
-                    return (element != null && element.isDisplayed()) ? element : null;
-                } catch (NoSuchElementException ex) {
-                    return null;
-                }
-            });
+            ul = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("ul.list-group")));
             Assert.assertNotNull("Task list element missing or not displayed", ul);
         } catch (TimeoutException e) {
             throw new AssertionError("Task list not found or not visible within the timeout. Current DOM snapshot: " + driver.getPageSource(), e);
@@ -106,7 +99,11 @@ public class EliminarTareaTest {
         botonEliminar.click();
 
         // Paso 4: Esperar que la tarea desaparezca de la lista
-        wait.until(ExpectedConditions.invisibilityOf(liTarea));
+        try {
+            wait.until(ExpectedConditions.stalenessOf(liTarea)); // Wait for the element to become stale
+        } catch (TimeoutException e) {
+            throw new AssertionError("Task was not removed from the DOM within the timeout. Current DOM snapshot: " + driver.getPageSource(), e);
+        }
 
         // Paso 5: Verificar que la tarea ya no está visible en la lista
         List<WebElement> itemsDespues = ul.findElements(By.tagName("li"));
