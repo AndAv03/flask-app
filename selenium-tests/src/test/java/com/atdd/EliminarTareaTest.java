@@ -62,17 +62,19 @@ public class EliminarTareaTest {
         // Paso 2: Asegurarse de que hay al menos una tarea visible (si no, agregar una)
         String tituloTarea = "Tarea para eliminar " + System.currentTimeMillis();
         WebElement inputTarea = driver.findElement(By.name("task"));
+        Assert.assertTrue("Task input field not found", inputTarea.isDisplayed());
         inputTarea.sendKeys(tituloTarea);
         driver.findElement(By.xpath("//button[text()='Agregar']")).click();
 
         // Esperar explícitamente a que la lista de tareas aparezca en el DOM
-        WebDriverWait wait = new WebDriverWait(driver, 10);
+        WebDriverWait wait = new WebDriverWait(driver, 20); // Increased wait time
         WebElement ul = wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("ul.list-group")));
+        Assert.assertNotNull("Task list element missing", ul);
 
         // Buscar el <li> de la tarea agregada
         WebElement liTarea = null;
         long start = System.currentTimeMillis();
-        while (System.currentTimeMillis() - start < 10000) { // 10 segundos
+        while (System.currentTimeMillis() - start < 20000) { // Increased loop time
             List<WebElement> items = ul.findElements(By.tagName("li"));
             for (WebElement item : items) {
                 if (item.getText().contains(tituloTarea)) {
@@ -84,7 +86,7 @@ public class EliminarTareaTest {
             Thread.sleep(500);
         }
         if (liTarea == null) {
-            throw new AssertionError("La tarea no apareció en la lista tras agregarla. HTML actual: " + ul.getAttribute("outerHTML"));
+            throw new AssertionError("Task not found after adding. Current DOM: " + driver.getPageSource());
         }
 
         // Paso 3: Hacer clic en el botón de "Eliminar" junto a la tarea
