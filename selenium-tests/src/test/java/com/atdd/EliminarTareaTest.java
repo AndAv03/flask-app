@@ -7,6 +7,7 @@ import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import java.net.URL;
+import java.util.List;
 
 /****************************************/
 // Historia de Usuario: Como usuario quiero eliminar una tarea
@@ -66,16 +67,27 @@ public class EliminarTareaTest {
 
         // Esperar a que la tarea aparezca en la lista (hasta 10 segundos)
         WebDriverWait wait = new WebDriverWait(driver, 10);
-        WebElement liTarea;
-        try {
-            liTarea = wait.until(ExpectedConditions.visibilityOfElementLocated(
-                By.xpath("//li[contains(.,'" + tituloTarea + "')]")
-            ));
-        } catch (TimeoutException e) {
-            // Imprime el HTML de la lista para depuración
-            WebElement ul = driver.findElement(By.cssSelector("ul.list-group"));
-            System.out.println("DEBUG HTML LISTA: " + ul.getAttribute("outerHTML"));
-            throw new AssertionError("La tarea no apareció en la lista tras agregarla", e);
+        List<WebElement> listas = driver.findElements(By.cssSelector("ul.list-group"));
+        if (listas.isEmpty()) {
+            throw new AssertionError("No se encontró la lista de tareas (ul.list-group) después de agregar la tarea.");
+        }
+        WebElement ul = listas.get(0);
+
+        WebElement liTarea = null;
+        long start = System.currentTimeMillis();
+        while (System.currentTimeMillis() - start < 10000) { // 10 segundos
+            List<WebElement> items = ul.findElements(By.tagName("li"));
+            for (WebElement item : items) {
+                if (item.getText().contains(tituloTarea)) {
+                    liTarea = item;
+                    break;
+                }
+            }
+            if (liTarea != null) break;
+            Thread.sleep(500);
+        }
+        if (liTarea == null) {
+            throw new AssertionError("La tarea no apareció en la lista tras agregarla. HTML actual: " + ul.getAttribute("outerHTML"));
         }
 
         // Paso 3: Hacer clic en el botón de "Eliminar" junto a la tarea
@@ -83,8 +95,7 @@ public class EliminarTareaTest {
         try {
             botonEliminar = liTarea.findElement(By.xpath(".//a[contains(@class,'btn-outline-danger')]"));
         } catch (NoSuchElementException e) {
-            System.out.println("DEBUG HTML LI: " + liTarea.getAttribute("outerHTML"));
-            throw new AssertionError("No se encontró el botón Eliminar para la tarea", e);
+            throw new AssertionError("No se encontró el botón Eliminar para la tarea. HTML actual: " + liTarea.getAttribute("outerHTML"));
         }
         botonEliminar.click();
 
@@ -92,7 +103,14 @@ public class EliminarTareaTest {
         Thread.sleep(1000);
 
         // Paso 5: Verificar que la tarea ya no está visible en la lista
-        boolean tareaPresente = driver.findElements(By.xpath("//li[contains(.,'" + tituloTarea + "')]")).size() > 0;
+        boolean tareaPresente = false;
+        List<WebElement> itemsDespues = ul.findElements(By.tagName("li"));
+        for (WebElement item : itemsDespues) {
+            if (item.getText().contains(tituloTarea)) {
+                tareaPresente = true;
+                break;
+            }
+        }
         Assert.assertFalse("La tarea eliminada aún está presente en la lista", tareaPresente);
     }
 
