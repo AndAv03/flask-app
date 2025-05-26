@@ -80,7 +80,7 @@ public class AgregarTareaTest {
         Assert.assertTrue("No se redirigió al dashboard", currentUrl.contains("/dashboard"));
 
         // Paso 6: Ingresar el texto de la tarea en el campo correspondiente
-        String textoTarea = "sasaassssssssssa122222222" + System.currentTimeMillis();
+        String textoTarea = "software" + System.currentTimeMillis();
         WebElement campoTarea = driver.findElement(By.name("task"));
         campoTarea.clear();
         campoTarea.sendKeys(textoTarea);
