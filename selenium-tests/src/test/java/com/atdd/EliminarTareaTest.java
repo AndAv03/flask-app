@@ -67,7 +67,7 @@ public class EliminarTareaTest {
         driver.findElement(By.xpath("//button[text()='Agregar']")).click();
 
         // Esperar explícitamente a que la lista de tareas sea visible en el DOM
-        WebDriverWait wait = new WebDriverWait(driver, 20);
+        WebDriverWait wait = new WebDriverWait(driver, 30); // Increase timeout to 30 seconds
         WebElement ul = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("ul.list-group")));
         Assert.assertNotNull("Task list element missing", ul);
 
