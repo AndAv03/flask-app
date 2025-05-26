@@ -66,15 +66,15 @@ public class EliminarTareaTest {
         inputTarea.sendKeys(tituloTarea);
         driver.findElement(By.xpath("//button[text()='Agregar']")).click();
 
-        // Esperar explícitamente a que la lista de tareas aparezca en el DOM
-        WebDriverWait wait = new WebDriverWait(driver, 20); // Increased wait time
-        WebElement ul = wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("ul.list-group")));
+        // Esperar explícitamente a que la lista de tareas sea visible en el DOM
+        WebDriverWait wait = new WebDriverWait(driver, 20);
+        WebElement ul = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("ul.list-group")));
         Assert.assertNotNull("Task list element missing", ul);
 
         // Buscar el <li> de la tarea agregada
         WebElement liTarea = null;
         long start = System.currentTimeMillis();
-        while (System.currentTimeMillis() - start < 20000) { // Increased loop time
+        while (System.currentTimeMillis() - start < 20000) {
             List<WebElement> items = ul.findElements(By.tagName("li"));
             for (WebElement item : items) {
                 if (item.getText().contains(tituloTarea)) {
