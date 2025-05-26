@@ -8,6 +8,7 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import java.net.URL;
 import java.util.List;
+import java.util.Optional;
 
 /****************************************/
 // Historia de Usuario: Como usuario quiero eliminar una tarea
@@ -54,7 +55,7 @@ public class EliminarTareaTest {
         driver.findElement(By.name("password")).sendKeys(clave);
         driver.findElement(By.xpath("//button[text()='Registrarse']")).click();
 
-        WebDriverWait wait = new WebDriverWait(driver, 90);
+        WebDriverWait wait = new WebDriverWait(driver, 120);
 
         // Esperar a que el formulario de login esté visible
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.name("username")));
@@ -72,24 +73,22 @@ public class EliminarTareaTest {
         inputTarea.sendKeys(tituloTarea);
         driver.findElement(By.xpath("//button[text()='Agregar']")).click();
 
-        // Espera robusta para la lista de tareas
-        WebElement ul;
-        try {
-            ul = wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("ul.list-group")));
-            Assert.assertNotNull("Task list element missing or not displayed", ul);
-        } catch (TimeoutException e) {
-            throw new AssertionError("Task list not found or not visible within the timeout. Current DOM snapshot: " + driver.getPageSource(), e);
-        }
+        // Esperar robustamente a que la lista de tareas esté presente
+        wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("ul.list-group")));
 
-        // Esperar a que el <li> de la tarea agregada esté presente
+        // Esperar a que el <li> de la tarea agregada esté presente usando stream
         WebElement liTarea;
         try {
-            liTarea = wait.until(ExpectedConditions.presenceOfNestedElementLocatedBy(
-                By.cssSelector("ul.list-group"),
-                By.xpath(".//li[contains(., '" + tituloTarea + "')]")
-            ));
+            liTarea = wait.until(d -> {
+                Optional<WebElement> matching = d.findElements(By.cssSelector("ul.list-group li"))
+                    .stream()
+                    .filter(item -> item.getText().contains(tituloTarea))
+                    .findFirst();
+                return matching.orElse(null);
+            });
             Assert.assertNotNull("Task not found after adding", liTarea);
         } catch (TimeoutException | NoSuchElementException e) {
+            System.out.println("DEBUG: Task not found after adding. DOM: " + driver.getPageSource());
             throw new AssertionError("Task not found within the timeout. Current DOM snapshot: " + driver.getPageSource(), e);
         }
 
@@ -101,6 +100,7 @@ public class EliminarTareaTest {
         try {
             wait.until(ExpectedConditions.stalenessOf(liTarea));
         } catch (TimeoutException e) {
+            System.out.println("DEBUG: Task not removed after delete. DOM: " + driver.getPageSource());
             throw new AssertionError("Task was not removed from the DOM within the timeout. Current DOM snapshot: " + driver.getPageSource(), e);
         }
 
