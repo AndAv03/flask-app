@@ -72,10 +72,10 @@ public class EliminarTareaTest {
         inputTarea.sendKeys(tituloTarea);
         driver.findElement(By.xpath("//button[text()='Agregar']")).click();
 
-        // Esperar explícitamente a que la lista de tareas sea visible en el DOM con una condición personalizada
+        // Espera robusta para la lista de tareas
         WebElement ul;
         try {
-            ul = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("ul.list-group")));
+            ul = wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("ul.list-group")));
             Assert.assertNotNull("Task list element missing or not displayed", ul);
         } catch (TimeoutException e) {
             throw new AssertionError("Task list not found or not visible within the timeout. Current DOM snapshot: " + driver.getPageSource(), e);
@@ -93,20 +93,19 @@ public class EliminarTareaTest {
             throw new AssertionError("Task not found within the timeout. Current DOM snapshot: " + driver.getPageSource(), e);
         }
 
-
         // Paso 3: Hacer clic en el botón de "Eliminar" junto a la tarea
         WebElement botonEliminar = liTarea.findElement(By.xpath(".//a[contains(@class,'btn-outline-danger')]"));
         botonEliminar.click();
 
         // Paso 4: Esperar que la tarea desaparezca de la lista
         try {
-            wait.until(ExpectedConditions.stalenessOf(liTarea)); // Wait for the element to become stale
+            wait.until(ExpectedConditions.stalenessOf(liTarea));
         } catch (TimeoutException e) {
             throw new AssertionError("Task was not removed from the DOM within the timeout. Current DOM snapshot: " + driver.getPageSource(), e);
         }
 
         // Paso 5: Verificar que la tarea ya no está visible en la lista
-        List<WebElement> itemsDespues = ul.findElements(By.tagName("li"));
+        List<WebElement> itemsDespues = driver.findElements(By.cssSelector("ul.list-group li"));
         boolean tareaPresente = itemsDespues.stream().anyMatch(item -> item.getText().contains(tituloTarea));
         Assert.assertFalse("La tarea eliminada aún está presente en la lista", tareaPresente);
     }
