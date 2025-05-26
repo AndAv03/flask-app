@@ -72,12 +72,19 @@ public class EliminarTareaTest {
         inputTarea.sendKeys(tituloTarea);
         driver.findElement(By.xpath("//button[text()='Agregar']")).click();
 
-        // Esperar explícitamente a que la lista de tareas sea visible en el DOM
+        // Esperar explícitamente a que la lista de tareas sea visible en el DOM con una condición personalizada
         WebElement ul;
         try {
-            ul = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("ul.list-group")));
-            Assert.assertNotNull("Task list element missing", ul);
-        } catch (TimeoutException | NoSuchElementException e) {
+            ul = wait.until(driver -> {
+                try {
+                    WebElement element = driver.findElement(By.cssSelector("ul.list-group"));
+                    return (element != null && element.isDisplayed()) ? element : null;
+                } catch (NoSuchElementException ex) {
+                    return null;
+                }
+            });
+            Assert.assertNotNull("Task list element missing or not displayed", ul);
+        } catch (TimeoutException e) {
             // Log the DOM for debugging
             throw new AssertionError("Task list not found or not visible within the timeout. Current DOM snapshot: " + driver.getPageSource(), e);
         }
