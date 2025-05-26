@@ -53,11 +53,17 @@ public class EliminarTareaTest {
         driver.findElement(By.name("username")).sendKeys(usuario);
         driver.findElement(By.name("password")).sendKeys(clave);
         driver.findElement(By.xpath("//button[text()='Registrarse']")).click();
-        Thread.sleep(1000);
+
+        WebDriverWait wait = new WebDriverWait(driver, 60);
+
+        // Esperar a que el formulario de login esté visible
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.name("username")));
         driver.findElement(By.name("username")).sendKeys(usuario);
         driver.findElement(By.name("password")).sendKeys(clave);
         driver.findElement(By.xpath("//button[text()='Ingresar']")).click();
-        Thread.sleep(1000);
+
+        // Esperar a que el campo de tarea esté visible
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.name("task")));
 
         // Paso 2: Asegurarse de que hay al menos una tarea visible (si no, agregar una)
         String tituloTarea = "Tarea para eliminar " + System.currentTimeMillis();
@@ -67,55 +73,36 @@ public class EliminarTareaTest {
         driver.findElement(By.xpath("//button[text()='Agregar']")).click();
 
         // Esperar explícitamente a que la lista de tareas sea visible en el DOM
-        WebDriverWait wait = new WebDriverWait(driver, 60); // Increase timeout to 60 seconds
         WebElement ul;
         try {
             ul = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("ul.list-group")));
             Assert.assertNotNull("Task list element missing", ul);
         } catch (TimeoutException e) {
-            // Log the current DOM for debugging
             throw new AssertionError("Task list not found within the timeout. Current DOM: " + driver.getPageSource(), e);
         }
 
-        // Buscar el <li> de la tarea agregada
-        WebElement liTarea = null;
-        long start = System.currentTimeMillis();
-        while (System.currentTimeMillis() - start < 20000) {
-            List<WebElement> items = ul.findElements(By.tagName("li"));
-            for (WebElement item : items) {
-                if (item.getText().contains(tituloTarea)) {
-                    liTarea = item;
-                    break;
-                }
-            }
-            if (liTarea != null) break;
-            Thread.sleep(500);
-        }
-        if (liTarea == null) {
-            throw new AssertionError("Task not found after adding. Current DOM: " + driver.getPageSource());
+        // Esperar a que el <li> de la tarea agregada esté presente
+        WebElement liTarea;
+        try {
+            liTarea = wait.until(ExpectedConditions.presenceOfNestedElementLocatedBy(
+                By.cssSelector("ul.list-group"),
+                By.xpath(".//li[contains(., '" + tituloTarea + "')]")
+            ));
+            Assert.assertNotNull("Task not found after adding", liTarea);
+        } catch (TimeoutException e) {
+            throw new AssertionError("Task not found within the timeout. Current DOM: " + driver.getPageSource(), e);
         }
 
         // Paso 3: Hacer clic en el botón de "Eliminar" junto a la tarea
-        WebElement botonEliminar = null;
-        try {
-            botonEliminar = liTarea.findElement(By.xpath(".//a[contains(@class,'btn-outline-danger')]"));
-        } catch (NoSuchElementException e) {
-            throw new AssertionError("No se encontró el botón Eliminar para la tarea. HTML actual: " + liTarea.getAttribute("outerHTML"));
-        }
+        WebElement botonEliminar = liTarea.findElement(By.xpath(".//a[contains(@class,'btn-outline-danger')]"));
         botonEliminar.click();
 
-        // Paso 4: Esperar que se actualice la lista
-        Thread.sleep(1000);
+        // Paso 4: Esperar que la tarea desaparezca de la lista
+        wait.until(ExpectedConditions.invisibilityOf(liTarea));
 
         // Paso 5: Verificar que la tarea ya no está visible en la lista
-        boolean tareaPresente = false;
         List<WebElement> itemsDespues = ul.findElements(By.tagName("li"));
-        for (WebElement item : itemsDespues) {
-            if (item.getText().contains(tituloTarea)) {
-                tareaPresente = true;
-                break;
-            }
-        }
+        boolean tareaPresente = itemsDespues.stream().anyMatch(item -> item.getText().contains(tituloTarea));
         Assert.assertFalse("La tarea eliminada aún está presente en la lista", tareaPresente);
     }
 
