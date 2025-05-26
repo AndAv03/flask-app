@@ -4,6 +4,8 @@ import org.junit.*;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.RemoteWebDriver;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import java.net.URL;
 
 /****************************************/
@@ -61,12 +63,16 @@ public class EliminarTareaTest {
         WebElement inputTarea = driver.findElement(By.name("task"));
         inputTarea.sendKeys(tituloTarea);
         driver.findElement(By.xpath("//button[text()='Agregar']")).click();
-        Thread.sleep(1000);
+
+        // Esperar a que la tarea aparezca en la lista
+        WebDriverWait wait = new WebDriverWait(driver, 5);
+        WebElement liTarea = wait.until(ExpectedConditions.visibilityOfElementLocated(
+            By.xpath("//li[contains(.,'" + tituloTarea + "')]")
+        ));
 
         // Paso 3: Hacer clic en el botón de "Eliminar" junto a la tarea
-        WebElement botonEliminar = driver.findElement(By.xpath("//li[contains(.,'" + tituloTarea + "')]//a[contains(@class,'btn-outline-danger')]"));
+        WebElement botonEliminar = liTarea.findElement(By.xpath(".//a[contains(@class,'btn-outline-danger')]"));
         botonEliminar.click();
-        Thread.sleep(1000);
 
         // Paso 4: Esperar que se actualice la lista
         Thread.sleep(1000);
