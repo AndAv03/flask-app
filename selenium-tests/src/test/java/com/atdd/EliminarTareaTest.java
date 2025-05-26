@@ -22,12 +22,13 @@ import java.util.concurrent.TimeUnit;
 // Prueba de Aceptación: Verificar que una tarea desaparece de la lista
 // después de eliminarla.
 //
-// 1. Iniciar sesión (registrar usuario si es necesario)
-// 2. Asegurarse de que hay al menos una tarea visible (si no, agregar una)
-// 3. Hacer clic en el botón de "Eliminar" junto a la tarea
-// 4. Esperar que se actualice la lista
-// 5. Verificar que la tarea ya no está visible en la lista
-//
+// 1. Acceder a la página principal del Gestor de Tareas
+// Paso 2: Hacer clic en el botón "Registrarse" desde home
+// Paso 3: registrar usuario si es necesario)
+// Paso 4: Asegurarse de que hay al menos una tarea visible (si no, agregar una)
+// Paso 5: Hacer clic en el botón de "Eliminar" junto a la tarea
+// Paso 6: Esperar que la tarea desaparezca de la lista
+// Paso 7: Verificar que la tarea ya no está visible en la lista
 // RESULTADO ESPERADO: La tarea eliminada ya no debe aparecer en la lista de tareas.
 /****************************************/
 
@@ -51,7 +52,7 @@ public class EliminarTareaTest {
         baseUrl = "http://localhost:5000"; // URL base del Gestor de Tareas
         driver.get(baseUrl);
 
-         // Paso 2: Hacer clic en el botón "Iniciar Sesión" desde home
+         // Paso 2: Hacer clic en el botón "Registrarse" desde home
         WebElement botonRegistroHome = driver.findElement(By.xpath("//a[text()='Registrarse']"));
         botonRegistroHome.click();
 
@@ -115,6 +116,7 @@ public class EliminarTareaTest {
         }
 
         // Paso 7: Verificar que la tarea ya no está visible en la lista
+        Thread.sleep(1000);
         List<WebElement> itemsDespues = driver.findElements(By.cssSelector("ul.list-group li"));
         boolean tareaPresente = itemsDespues.stream().anyMatch(item -> item.getText().contains(tituloTarea));
         Assert.assertFalse("La tarea eliminada aún está presente en la lista", tareaPresente);
