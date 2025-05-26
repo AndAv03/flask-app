@@ -5,8 +5,12 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.*;
+import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.RemoteWebDriver;
+
+import io.github.bonigarcia.wdm.WebDriverManager;
+
 import java.net.URL;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -34,25 +38,17 @@ import java.util.concurrent.TimeUnit;
 public class AgregarTareaTest {
 
     private WebDriver driver;
-    private String baseUrl;
-    private String nombreUsuario;
-    private String contraseña;
+    private String baseUrl = "http://localhost:5000"; // URL base del Gestor de Tareas
+    private String nombreUsuario="testuser";
+    private String contraseña="123";
 
     @Before
     public void setUp() throws Exception {
-        // Configuración de Chrome para ejecución en CI (headless y flags recomendados)
-        ChromeOptions options = new ChromeOptions();
-        options.addArguments("--headless");
-        options.addArguments("--no-sandbox");
-        options.addArguments("--disable-dev-shm-usage");
-        options.addArguments("--disable-gpu");
-        options.addArguments("--window-size=1920,1080");
-        driver = new RemoteWebDriver(new URL("http://localhost:4444/wd/hub"), options);
+        WebDriverManager.chromedriver().setup();
+        driver = new ChromeDriver();
+
         driver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS);
         driver.manage().window().maximize();
-        baseUrl = System.getenv().getOrDefault("FLASK_BASE_URL", "http://localhost:5000");
-        nombreUsuario = "testuser";
-        contraseña = "123";
     }
 
     @Test
@@ -65,6 +61,7 @@ public class AgregarTareaTest {
         botonLoginHome.click();
 
         // Paso 3: Rellenar el formulario de inicio de sesión
+        Thread.sleep(2000); // Esperar a que la página cargue
         WebElement username = driver.findElement(By.name("username"));
         WebElement password = driver.findElement(By.name("password"));
         username.sendKeys(nombreUsuario);

@@ -1,14 +1,17 @@
 package com.atdd;
 
+import io.github.bonigarcia.wdm.WebDriverManager;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.*;
+import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
+import java.time.Duration;
 
 /****************************************/
 // Historia de Usuario: Como nuevo usuario quiero registrarme
@@ -32,21 +35,15 @@ import java.util.concurrent.TimeUnit;
 public class RegistroUsuarioTest {
 
     private WebDriver driver;
-    private String baseUrl;
+    private String baseUrl="http://localhost:5000"; // URL base del Gestor de Tareas
 
     @Before
     public void setUp() throws Exception {
-        // Configuración de Chrome para ejecución en CI (headless y flags recomendados)
-        ChromeOptions options = new ChromeOptions();
-        options.addArguments("--headless");
-        options.addArguments("--no-sandbox");
-        options.addArguments("--disable-dev-shm-usage");
-        options.addArguments("--disable-gpu");
-        options.addArguments("--window-size=1920,1080");
-        driver = new RemoteWebDriver(new URL("http://localhost:4444/wd/hub"), options);
+        WebDriverManager.chromedriver().setup();
+        driver = new ChromeDriver();
+
         driver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS);
         driver.manage().window().maximize();
-        baseUrl = System.getenv().getOrDefault("FLASK_BASE_URL", "http://localhost:5000");
     }
 
     @Test
@@ -59,6 +56,7 @@ public class RegistroUsuarioTest {
         botonRegistroHome.click();
 
         // Paso 3: Rellenar el formulario de registro
+        Thread.sleep(1000); // Esperar a que la página cargue
         WebElement username = driver.findElement(By.name("username"));
         WebElement password = driver.findElement(By.name("password"));
         String nombreAleatorio = "usuario" + System.currentTimeMillis();

@@ -2,13 +2,18 @@ package com.atdd;
 
 import org.junit.*;
 import org.openqa.selenium.*;
+import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+
+import io.github.bonigarcia.wdm.WebDriverManager;
+
 import java.net.URL;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 /****************************************/
 // Historia de Usuario: Como usuario quiero eliminar una tarea
@@ -33,22 +38,26 @@ public class EliminarTareaTest {
 
     @Before
     public void setUp() throws Exception {
-        // Configuración de Chrome para ejecución en CI (headless y flags recomendados)
-        ChromeOptions options = new ChromeOptions();
-        options.addArguments("--headless");
-        options.addArguments("--no-sandbox");
-        options.addArguments("--disable-dev-shm-usage");
-        options.addArguments("--disable-gpu");
-        options.addArguments("--window-size=1920,1080");
-        driver = new RemoteWebDriver(new URL("http://localhost:4444/wd/hub"), options);
+        WebDriverManager.chromedriver().setup();
+        driver = new ChromeDriver();
+
+        driver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS);
         driver.manage().window().maximize();
-        baseUrl = System.getenv().getOrDefault("FLASK_BASE_URL", "http://localhost:5000");
     }
 
     @Test
     public void eliminarTareaExistenteYConfirmarDesaparicion() throws InterruptedException {
-        // Paso 1: Iniciar sesión (registrar usuario si es necesario)
-        driver.get(baseUrl + "/register");
+        // Paso 1 : Acceder a la página principal del Gestor de Tareas
+        baseUrl = "http://localhost:5000"; // URL base del Gestor de Tareas
+        driver.get(baseUrl);
+
+         // Paso 2: Hacer clic en el botón "Iniciar Sesión" desde home
+        WebElement botonRegistroHome = driver.findElement(By.xpath("//a[text()='Registrarse']"));
+        botonRegistroHome.click();
+
+
+        // Paso 3: registrar usuario si es necesario)
+        Thread.sleep(2000);
         String usuario = "usuario" + System.currentTimeMillis();
         String clave = "clave123";
         driver.findElement(By.name("username")).sendKeys(usuario);
@@ -64,16 +73,17 @@ public class EliminarTareaTest {
         driver.findElement(By.xpath("//button[text()='Ingresar']")).click();
 
         // Esperar a que el campo de tarea esté visible
-        wait.until(ExpectedConditions.visibilityOfElementLocated(By.name("task")));
-
-        // Paso 2: Asegurarse de que hay al menos una tarea visible (si no, agregar una)
-        String tituloTarea = "Tarea para eliminar " + System.currentTimeMillis();
+        //wait.until(ExpectedConditions.visibilityOfElementLocated(By.name("task")));
+        Thread.sleep(1000);
+        // Paso 4: Asegurarse de que hay al menos una tarea visible (si no, agregar una)
+        String tituloTarea = "Tarea";
         WebElement inputTarea = driver.findElement(By.name("task"));
         Assert.assertTrue("Task input field not found", inputTarea.isDisplayed());
         inputTarea.sendKeys(tituloTarea);
         driver.findElement(By.xpath("//button[text()='Agregar']")).click();
 
         // Esperar robustamente a que la lista de tareas esté presente
+        Thread.sleep(1000);
         wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("ul.list-group")));
 
         // Esperar a que el <li> de la tarea agregada esté presente usando stream
@@ -92,11 +102,11 @@ public class EliminarTareaTest {
             throw new AssertionError("Task not found within the timeout. Current DOM snapshot: " + driver.getPageSource(), e);
         }
 
-        // Paso 3: Hacer clic en el botón de "Eliminar" junto a la tarea
+        // Paso 5: Hacer clic en el botón de "Eliminar" junto a la tarea
         WebElement botonEliminar = liTarea.findElement(By.xpath(".//a[contains(@class,'btn-outline-danger')]"));
         botonEliminar.click();
 
-        // Paso 4: Esperar que la tarea desaparezca de la lista
+        // Paso 6: Esperar que la tarea desaparezca de la lista
         try {
             wait.until(ExpectedConditions.stalenessOf(liTarea));
         } catch (TimeoutException e) {
@@ -104,7 +114,7 @@ public class EliminarTareaTest {
             throw new AssertionError("Task was not removed from the DOM within the timeout. Current DOM snapshot: " + driver.getPageSource(), e);
         }
 
-        // Paso 5: Verificar que la tarea ya no está visible en la lista
+        // Paso 7: Verificar que la tarea ya no está visible en la lista
         List<WebElement> itemsDespues = driver.findElements(By.cssSelector("ul.list-group li"));
         boolean tareaPresente = itemsDespues.stream().anyMatch(item -> item.getText().contains(tituloTarea));
         Assert.assertFalse("La tarea eliminada aún está presente en la lista", tareaPresente);
