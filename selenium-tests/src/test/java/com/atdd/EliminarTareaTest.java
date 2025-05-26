@@ -64,14 +64,28 @@ public class EliminarTareaTest {
         inputTarea.sendKeys(tituloTarea);
         driver.findElement(By.xpath("//button[text()='Agregar']")).click();
 
-        // Esperar a que la tarea aparezca en la lista
-        WebDriverWait wait = new WebDriverWait(driver, 5);
-        WebElement liTarea = wait.until(ExpectedConditions.visibilityOfElementLocated(
-            By.xpath("//li[contains(.,'" + tituloTarea + "')]")
-        ));
+        // Esperar a que la tarea aparezca en la lista (hasta 10 segundos)
+        WebDriverWait wait = new WebDriverWait(driver, 10);
+        WebElement liTarea;
+        try {
+            liTarea = wait.until(ExpectedConditions.visibilityOfElementLocated(
+                By.xpath("//li[contains(.,'" + tituloTarea + "')]")
+            ));
+        } catch (TimeoutException e) {
+            // Imprime el HTML de la lista para depuración
+            WebElement ul = driver.findElement(By.cssSelector("ul.list-group"));
+            System.out.println("DEBUG HTML LISTA: " + ul.getAttribute("outerHTML"));
+            throw new AssertionError("La tarea no apareció en la lista tras agregarla", e);
+        }
 
         // Paso 3: Hacer clic en el botón de "Eliminar" junto a la tarea
-        WebElement botonEliminar = liTarea.findElement(By.xpath(".//a[contains(@class,'btn-outline-danger')]"));
+        WebElement botonEliminar = null;
+        try {
+            botonEliminar = liTarea.findElement(By.xpath(".//a[contains(@class,'btn-outline-danger')]"));
+        } catch (NoSuchElementException e) {
+            System.out.println("DEBUG HTML LI: " + liTarea.getAttribute("outerHTML"));
+            throw new AssertionError("No se encontró el botón Eliminar para la tarea", e);
+        }
         botonEliminar.click();
 
         // Paso 4: Esperar que se actualice la lista
